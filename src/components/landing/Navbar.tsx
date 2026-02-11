@@ -87,19 +87,35 @@ export const Navbar = () => {
 
                 {/* Menú Móvil Desplegable */}
                 {isMobileMenuOpen && (
-                    <div className="md:hidden py-4 border-t bg-white">
-                        <div className="flex flex-col gap-4">
+                    <div className="md:hidden py-4 border-t bg-white shadow-lg absolute top-18 left-0 w-full z-40">
+                        <div className="flex flex-col gap-4 px-4">
                             {navLinks.map((link) => (
                                 <a
                                     key={link.href}
                                     href={link.href}
-                                    className="text-gray-700 hover:text-blue-600 py-2"
+                                    className="text-gray-700 hover:text-blue-600 py-2 border-b border-gray-100"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     {link.label}
                                 </a>
                             ))}
-                            <Button variant="outline" className="w-full">Iniciar Sesión</Button>
+                            <a
+                                href="/dashboard"
+                                className="text-blue-600 font-bold py-2 border-b border-gray-100"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                Dashboard
+                            </a>
+                            <Button
+                                variant="outline"
+                                className="w-full mt-2"
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                    window.location.href = '/dashboard';
+                                }}
+                            >
+                                Iniciar Sesión
+                            </Button>
                             <Button className="w-full">Prueba Gratis</Button>
                         </div>
                     </div>
