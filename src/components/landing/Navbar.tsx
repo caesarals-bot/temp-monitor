@@ -58,11 +58,15 @@ export const Navbar = () => {
                                 {link.label}
                             </a>
                         ))}
+                        {/* Enlace temporal para desarrollo */}
+                        <a href="/dashboard" className="text-blue-600 font-bold hover:text-blue-800">
+                            Dashboard (Dev)
+                        </a>
                     </div>
 
                     {/* Botones de CTA (Call to Action) en Escritorio */}
                     <div className="hidden md:flex items-center gap-4">
-                        <Button variant="outline">Iniciar Sesión</Button>
+                        <Button variant="outline" onClick={() => window.location.href = '/dashboard'}>Iniciar Sesión</Button>
                         <Button>Prueba Gratis</Button>
                     </div>
 
