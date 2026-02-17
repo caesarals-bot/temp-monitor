@@ -19,18 +19,31 @@ import {
 } from "@/components/ui/select";
 import { useApp } from "@/context/AppContext";
 
+import { DashboardEmptyState } from "@/components/dashboard/DashboardEmptyState";
+
 export const DashboardPage = () => {
     const { dashboardData } = useDashboardData();
-    const { restaurants, currentUser } = useApp();
+    const { restaurants, currentUser, equipment } = useApp();
     const [selectedRestaurantId, setSelectedRestaurantId] = useState<string>('all');
 
     const filteredData = dashboardData.filter(item => {
-        if (currentUser?.restaurant_id) return true; // useDashboardData ya filtra por usuario si tiene restricción
+        if (currentUser?.restaurant_id) return true;
         if (selectedRestaurantId === 'all') return true;
         return item.restaurant_id === selectedRestaurantId;
     });
 
     const activeAlerts = filteredData.filter(i => i.status === 'alert').length;
+
+    // Filter equipment to know if we should show empty state
+    const filteredEquipment = equipment.filter(e => {
+        // Si hay un filtro de restaurante específico activos, usarlo
+        if (selectedRestaurantId !== 'all') {
+            return e.restaurant_id === selectedRestaurantId;
+        }
+        // Si es 'all', mostrar todos los equipos de mis restaurantes disponibles
+        // (Ya que equipment viene filtrado por RLS o fetch, pero por seguridad UX filtramos por userRestaurants)
+        return restaurants.some(r => r.id === e.restaurant_id);
+    });
 
     return (
         <div className="space-y-6">
@@ -59,33 +72,40 @@ export const DashboardPage = () => {
                 )}
             </div>
 
-            <DashboardGrid data={filteredData} />
+            {filteredEquipment.length === 0 ? (
+                <DashboardEmptyState />
+            ) : (
+                <>
+                    <DashboardGrid data={filteredData} />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Registrar Nueva Lectura</CardTitle>
-                        <CardDescription>
-                            Ingresa los datos del termómetro manual.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <TemperatureEntryForm
-                            onSuccess={() => { }}
-                        />
-                    </CardContent>
-                </Card>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Registrar Nueva Lectura</CardTitle>
+                                <CardDescription>
+                                    Ingresa los datos del termómetro manual.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <TemperatureEntryForm
+                                    onSuccess={() => { }}
+                                    defaultRestaurantId={selectedRestaurantId !== 'all' ? selectedRestaurantId : undefined}
+                                />
+                            </CardContent>
+                        </Card>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Tendencias</CardTitle>
-                        <CardDescription>Historial de temperaturas.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <TemperatureChart />
-                    </CardContent>
-                </Card>
-            </div>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Tendencias</CardTitle>
+                                <CardDescription>Historial de temperaturas.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <TemperatureChart />
+                            </CardContent>
+                        </Card>
+                    </div>
+                </>
+            )}
         </div>
     );
 };

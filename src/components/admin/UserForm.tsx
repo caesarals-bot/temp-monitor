@@ -35,6 +35,7 @@ export const UserForm = ({ onSuccess }: UserFormProps) => {
         resolver: zodResolver(userSchema) as any,
         defaultValues: {
             name: '',
+            email: '',
             role: 'staff',
             restaurant_id: '',
         },
@@ -64,6 +65,20 @@ export const UserForm = ({ onSuccess }: UserFormProps) => {
                             <FormLabel>Nombre y Apellido</FormLabel>
                             <FormControl>
                                 <Input placeholder="Ej. Juan Pérez" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control as any}
+                    name="email"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Correo Electrónico</FormLabel>
+                            <FormControl>
+                                <Input type="email" placeholder="juan@restaurante.com" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>

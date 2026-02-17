@@ -1,6 +1,6 @@
 export interface Equipment {
     id: string;
-    code: string; // ID personalizado (ej. C001)
+    code?: string; // ID personalizado (ej. C001) - Opcional, no en DB
     name: string;
     min_temp: number;
     max_temp: number;
@@ -13,20 +13,22 @@ export interface TemperatureReading {
     value: number;
     recorded_at: string; // ISO String
     notes?: string;
-    snapshot_min_temp: number; // Rango en el momento de la toma
-    snapshot_max_temp: number;
+    snapshot_min_temp?: number; // Rango en el momento de la toma
+    snapshot_max_temp?: number;
     created_by: string; // ID del usuario que registró la toma
 }
 
 export interface Restaurant {
     id: string;
     name: string;
-    address?: string; // Opcional por ahora
+    address?: string;
+    organization_id?: string;
 }
 
 export interface User {
     id: string;
     name: string;
-    role: 'admin' | 'manager' | 'staff';
-    restaurant_id?: string; // Vincula al usuario con una sucursal
+    email: string;
+    role: 'owner' | 'admin' | 'manager' | 'staff';
+    restaurant_id?: string; // En Supabase esto mapea a organization_id
 }

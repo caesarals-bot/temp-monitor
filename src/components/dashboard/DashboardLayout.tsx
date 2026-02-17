@@ -1,4 +1,5 @@
-import { Outlet, Link, useLocation } from 'react-router';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router';
+import { useApp } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
 import {
     LayoutDashboard,
@@ -11,9 +12,17 @@ import {
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
+import { RestaurantSwitcher } from './RestaurantSwitcher';
 
 const SidebarContent = ({ onClose }: { onClose?: () => void }) => {
     const location = useLocation();
+    const { logout, currentUser } = useApp();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
 
     const sidebarItems = [
         { icon: LayoutDashboard, label: 'Resumen', href: '/dashboard' },
@@ -29,7 +38,13 @@ const SidebarContent = ({ onClose }: { onClose?: () => void }) => {
                 <span className="text-xl font-bold text-gray-900">TempMonitor</span>
             </div>
 
-            <nav className="flex-1 p-4 space-y-1">
+
+            <div className="px-6 py-4">
+                <RestaurantSwitcher />
+            </div>
+
+            <nav className="flex-1 px-4 space-y-1">
+
                 {sidebarItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = location.pathname === item.href;
@@ -56,23 +71,23 @@ const SidebarContent = ({ onClose }: { onClose?: () => void }) => {
             <div className="p-4 border-t border-gray-100">
                 <div className="flex items-center gap-3 px-4 py-3 mb-2">
                     <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold">
-                        CM
+                        {currentUser?.name?.charAt(0) || 'U'}
                     </div>
                     <div className="flex-1 overflow-hidden">
-                        <p className="text-sm font-medium text-gray-900 truncate">Chef Mario</p>
-                        <p className="text-xs text-gray-500 truncate">Gerente</p>
+                        <p className="text-sm font-medium text-gray-900 truncate">{currentUser?.name || 'Usuario'}</p>
+                        <p className="text-xs text-gray-500 truncate">{currentUser?.role || 'Staff'}</p>
                     </div>
                 </div>
                 <Button
                     variant="ghost"
                     className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => window.location.href = '/'}
+                    onClick={handleLogout}
                 >
                     <LogOut className="h-5 w-5 mr-3" />
                     Cerrar Sesión
                 </Button>
             </div>
-        </div>
+        </div >
     );
 };
 

@@ -121,7 +121,13 @@ export const EquipmentForm = ({ onSuccess }: EquipmentFormProps) => {
                             <FormItem>
                                 <FormLabel>Mín Temp (°C)</FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="Ej. 1" {...field} />
+                                    <Input
+                                        type="number"
+                                        placeholder="Ej. 1"
+                                        {...field}
+                                        value={field.value ?? ''}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -135,7 +141,13 @@ export const EquipmentForm = ({ onSuccess }: EquipmentFormProps) => {
                             <FormItem>
                                 <FormLabel>Máx Temp (°C)</FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="Ej. 5" {...field} />
+                                    <Input
+                                        type="number"
+                                        placeholder="Ej. 5"
+                                        {...field}
+                                        value={field.value ?? ''}
+                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

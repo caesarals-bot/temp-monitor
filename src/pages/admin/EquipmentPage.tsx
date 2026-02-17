@@ -33,13 +33,12 @@ export const EquipmentPage = () => {
 
     // Filter equipment based on selection or user's assigned restaurant
     const filteredEquipment = equipment.filter(eq => {
-        // If user is restricted to a restaurant, always filter by it
-        if (currentUser?.restaurant_id) {
-            return eq.restaurant_id === currentUser.restaurant_id;
+        // If specific restaurant selected, filter by it
+        if (selectedRestaurantId !== 'all') {
+            return eq.restaurant_id === selectedRestaurantId;
         }
-        // Otherwise use the dropdown filter
-        if (selectedRestaurantId === 'all') return true;
-        return eq.restaurant_id === selectedRestaurantId;
+        // Otherwise show all valid equipment (belonging to my visible restaurants)
+        return restaurants.some(r => r.id === eq.restaurant_id);
     });
 
     // Helper para obtener nombre del restaurante

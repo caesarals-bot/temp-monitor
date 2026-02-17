@@ -2,12 +2,12 @@ import type { Equipment, Restaurant, TemperatureReading, User } from '@/types';
 import { subMinutes, subHours } from 'date-fns';
 
 export const mockUsers: User[] = [
-    { id: 'u1', name: 'Chef Mario', role: 'manager', restaurant_id: 'r1' },
-    { id: 'u2', name: 'Ayudante Juan', role: 'staff', restaurant_id: 'r1' },
-    { id: 'u3', name: 'Gerente Ana', role: 'manager', restaurant_id: 'r2' },
-    { id: 'u4', name: 'Supervisor Carlos', role: 'admin' }, // Admin global
-    { id: 'u5', name: 'Chef Luigi', role: 'manager', restaurant_id: 'r3' },
-    { id: 'u6', name: 'Susana (Bar)', role: 'staff', restaurant_id: 'r4' },
+    { id: 'u1', name: 'Chef Mario', email: 'mario@example.com', role: 'manager', restaurant_id: 'r1' },
+    { id: 'u2', name: 'Ayudante Juan', email: 'juan@example.com', role: 'staff', restaurant_id: 'r1' },
+    { id: 'u3', name: 'Gerente Ana', email: 'ana@example.com', role: 'manager', restaurant_id: 'r2' },
+    { id: 'u4', name: 'Supervisor Carlos', email: 'carlos@example.com', role: 'admin' }, // Admin global
+    { id: 'u5', name: 'Chef Luigi', email: 'luigi@example.com', role: 'manager', restaurant_id: 'r3' },
+    { id: 'u6', name: 'Susana (Bar)', email: 'susana@example.com', role: 'staff', restaurant_id: 'r4' },
 ];
 
 export const mockRestaurants: Restaurant[] = [

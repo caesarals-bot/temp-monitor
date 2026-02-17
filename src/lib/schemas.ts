@@ -25,6 +25,7 @@ export const restaurantSchema = z.object({
 
 export const userSchema = z.object({
     name: z.string().min(3, "El nombre debe tener al menos 3 caracteres."),
+    email: z.string().email("Ingresa un correo electrónico válido."),
     role: z.enum(['admin', 'manager', 'staff']),
     restaurant_id: z.string().optional(), // Opcional porque un admin global podría no tener restaurante
 });
