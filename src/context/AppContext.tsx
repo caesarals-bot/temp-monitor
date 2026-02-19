@@ -154,7 +154,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
             try {
                 // Timeout para fetchProfile
                 const timeoutPromise = new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error("Timeout fetching profile")), 5000)
+                    setTimeout(() => reject(new Error("Timeout fetching profile")), 15000)
                 );
 
                 const dataPromise = supabase
