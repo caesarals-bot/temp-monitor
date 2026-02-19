@@ -4,6 +4,8 @@ import { format, subDays } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, Download } from "lucide-react";
 import type { DateRange } from "react-day-picker";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 import { useApp } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
@@ -52,6 +54,80 @@ export function ReportsPage() {
         return true;
     });
 
+    const handleExportPDF = () => {
+        const doc = new jsPDF();
+
+        // Title
+        doc.setFontSize(18);
+        doc.text("Reporte de Temperaturas", 14, 22);
+
+        // Metadata
+        doc.setFontSize(11);
+        doc.text(`Generado el: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: es })}`, 14, 32);
+
+        let rangeText = "Todo el historial";
+        if (date?.from) {
+            rangeText = format(date.from, "dd/MM/yyyy", { locale: es });
+            if (date.to) {
+                rangeText += ` - ${format(date.to, "dd/MM/yyyy", { locale: es })}`;
+            }
+        }
+        doc.text(`Rango de Fechas: ${rangeText}`, 14, 40);
+
+        const equipmentName = selectedEquipment === "all"
+            ? "Todos los equipos"
+            : equipment.find(e => e.id === selectedEquipment)?.name || "Equipo Desconocido";
+        doc.text(`Equipo: ${equipmentName}`, 14, 48);
+
+        if (currentRestaurant) {
+            doc.text(`Sede: ${currentRestaurant.name}`, 14, 56);
+        }
+
+        // Table Data
+        const tableColumn = ["Fecha", "Equipo", "Temp (°C)", "Estado", "Mín/Máx", "Usuario", "Notas"];
+        const tableRows: any[] = [];
+
+        filteredReadings.forEach(reading => {
+            const eq = equipment.find(e => e.id === reading.equipment_id);
+            const min = reading.snapshot_min_temp ?? eq?.min_temp ?? -Infinity;
+            const max = reading.snapshot_max_temp ?? eq?.max_temp ?? Infinity;
+
+            const isAlert = reading.value < min || reading.value > max;
+            const status = isAlert ? "ALERTA" : "Normal";
+
+            const rowData = [
+                format(new Date(reading.recorded_at), "dd/MM/yyyy HH:mm"),
+                eq?.name || "N/A",
+                `${reading.value}°C`,
+                status,
+                `${min}°C / ${max}°C`,
+                reading.taken_by || reading.created_by || "N/A",
+                reading.notes || "-"
+            ];
+            tableRows.push(rowData);
+        });
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 65,
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [22, 163, 74] }, // Green-600 tailored to brand?
+            alternateRowStyles: { fillColor: [240, 253, 244] },
+            didParseCell: (data) => {
+                // Highlight Alert rows
+                if (data.section === 'body' && data.column.index === 3) {
+                    if (data.cell.raw === "ALERTA") {
+                        data.cell.styles.textColor = [220, 38, 38]; // Red
+                        data.cell.styles.fontStyle = 'bold';
+                    }
+                }
+            }
+        });
+
+        doc.save(`reporte_temperaturas_${format(new Date(), "yyyyMMdd")}.pdf`);
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -61,7 +137,7 @@ export function ReportsPage() {
                         Analiza el historial de temperaturas y genera exportaciones.
                     </p>
                 </div>
-                <Button variant="outline">
+                <Button variant="outline" onClick={handleExportPDF}>
                     <Download className="mr-2 h-4 w-4" />
                     Exportar Datos
                 </Button>
