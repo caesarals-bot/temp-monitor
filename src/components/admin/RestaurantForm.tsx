@@ -53,7 +53,7 @@ export const RestaurantForm = ({ onSuccess }: RestaurantFormProps) => {
                     name="name"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Nombre del Restaurante</FormLabel>
+                            <FormLabel>Nombre de la Sede</FormLabel>
                             <FormControl>
                                 <Input placeholder="Ej. Sucursal Centro" {...field} />
                             </FormControl>
@@ -78,7 +78,7 @@ export const RestaurantForm = ({ onSuccess }: RestaurantFormProps) => {
 
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                     {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Crear Restaurante
+                    Crear Sede
                 </Button>
             </form>
         </Form>

@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 export const temperatureEntrySchema = z.object({
-    restaurant_id: z.string().min(1, "Selecciona un restaurante."),
-    user_id: z.string().min(1, "Selecciona el usuario que registra."),
+    restaurant_id: z.string().min(1, "Selecciona una sede."),
+    member_id: z.string().min(1, "Selecciona quién registra."),
     equipment_id: z.string().min(1, "Por favor selecciona un equipo."),
     value: z.coerce.number()
         .min(-100, "La temperatura debe ser mayor a -100°C")

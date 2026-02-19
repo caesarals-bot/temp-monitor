@@ -13,7 +13,7 @@ export const useTemperatureEntry = (onSuccess?: () => void) => {
         resolver: zodResolver(temperatureEntrySchema) as any,
         defaultValues: {
             restaurant_id: '',
-            user_id: '',
+            member_id: '',
             equipment_id: '',
             notes: '',
             value: undefined,
@@ -27,8 +27,8 @@ export const useTemperatureEntry = (onSuccess?: () => void) => {
                 equipment_id: data.equipment_id,
                 value: data.value,
                 notes: data.notes,
-                created_by: data.user_id,
-            });
+                member_id: data.member_id, // Pass to AppContext
+            } as any);
             form.reset();
             if (onSuccess) onSuccess();
         } catch (error) {

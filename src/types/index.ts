@@ -13,6 +13,7 @@ export interface TemperatureReading {
     value: number;
     recorded_at: string; // ISO String
     notes?: string;
+    taken_by?: string; // Nombre de quien tomó la lectura
     snapshot_min_temp?: number; // Rango en el momento de la toma
     snapshot_max_temp?: number;
     created_by: string; // ID del usuario que registró la toma
@@ -31,4 +32,13 @@ export interface User {
     email: string;
     role: 'owner' | 'admin' | 'manager' | 'staff';
     restaurant_id?: string; // En Supabase esto mapea a organization_id
+}
+
+export interface StaffMember {
+    id: string;
+    restaurant_id: string;
+    name: string;
+    role: string;
+    active: boolean;
+    created_at?: string;
 }

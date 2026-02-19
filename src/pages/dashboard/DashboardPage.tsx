@@ -60,10 +60,10 @@ export const DashboardPage = () => {
                 {!currentUser?.restaurant_id && (
                     <Select value={selectedRestaurantId} onValueChange={setSelectedRestaurantId}>
                         <SelectTrigger className="w-[200px]">
-                            <SelectValue placeholder="Filtrar por Restaurante" />
+                            <SelectValue placeholder="Filtrar por Sede" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">Todas las Sucursales</SelectItem>
+                            <SelectItem value="all">Todas las Sedes</SelectItem>
                             {restaurants.map(r => (
                                 <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
                             ))}

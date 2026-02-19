@@ -114,7 +114,7 @@ export const UserForm = ({ onSuccess }: UserFormProps) => {
                         name="restaurant_id"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Restaurante Asignado</FormLabel>
+                                <FormLabel>Sede Asignada</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                         <SelectTrigger>

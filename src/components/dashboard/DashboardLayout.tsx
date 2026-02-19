@@ -7,7 +7,8 @@ import {
     Settings,
     LogOut,
     FileText,
-    Menu
+    Menu,
+    Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -27,6 +28,7 @@ const SidebarContent = ({ onClose }: { onClose?: () => void }) => {
     const sidebarItems = [
         { icon: LayoutDashboard, label: 'Resumen', href: '/dashboard' },
         { icon: Thermometer, label: 'Equipos', href: '/dashboard/equipment' },
+        { icon: Users, label: 'Personal', href: '/dashboard/staff' },
         { icon: FileText, label: 'Reportes', href: '/dashboard/reports' }, // Placeholder
         { icon: Settings, label: 'Configuración', href: '/dashboard/settings' },
     ];
@@ -73,8 +75,8 @@ const SidebarContent = ({ onClose }: { onClose?: () => void }) => {
                     <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold">
                         {currentUser?.name?.charAt(0) || 'U'}
                     </div>
-                    <div className="flex-1 overflow-hidden">
-                        <p className="text-sm font-medium text-gray-900 truncate">{currentUser?.name || 'Usuario'}</p>
+                    <div className="flex-1 overflow-hidden cursor-pointer" onClick={() => navigate('/dashboard/profile')}>
+                        <p className="text-sm font-medium text-gray-900 truncate hover:underline">{currentUser?.name || 'Usuario'}</p>
                         <p className="text-xs text-gray-500 truncate">{currentUser?.role || 'Staff'}</p>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { Equipment, Restaurant, TemperatureReading, User } from '@/types';
+import type { Equipment, Restaurant, TemperatureReading, User, StaffMember } from '@/types';
 import { supabase } from '@/lib/supabase';
 
 // ... imports
@@ -20,7 +20,7 @@ interface AppContextType {
     selectRestaurant: (restaurantId: string) => void;
 
     // ... (resto de acciones igual)
-    addReading: (reading: Omit<TemperatureReading, 'id' | 'snapshot_min_temp' | 'snapshot_max_temp' | 'recorded_at'>) => Promise<void>;
+    addReading: (reading: Omit<TemperatureReading, 'id' | 'snapshot_min_temp' | 'snapshot_max_temp' | 'recorded_at' | 'created_by'> & { notes?: string, member_id?: string, created_by?: string }) => Promise<void>;
     getLastReading: (equipmentId: string) => TemperatureReading | undefined;
 
     // Admin Actions
@@ -31,6 +31,12 @@ interface AppContextType {
     addRestaurant: (restaurant: Omit<Restaurant, 'id'>) => Promise<void>;
     users: User[];
     addUser: (user: Omit<User, 'id'>) => Promise<void>;
+
+    // Staff Actions
+    staff: StaffMember[];
+    addStaff: (staff: Omit<StaffMember, 'id' | 'created_at' | 'active'>) => Promise<void>;
+    updateStaff: (id: string, data: Partial<StaffMember>) => Promise<void>;
+    deleteStaff: (id: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -40,6 +46,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
     const [equipment, setEquipment] = useState<Equipment[]>([]);
     const [users, setUsers] = useState<User[]>([]);
+    const [staff, setStaff] = useState<StaffMember[]>([]);
     const [readings, setReadings] = useState<TemperatureReading[]>([]);
     const [currentRestaurant, setCurrentRestaurant] = useState<Restaurant | null>(null);
 
@@ -85,6 +92,18 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
                 if (eqError) throw eqError;
                 setEquipment(eqData || []);
+
+                // 2.5 Fetch Staff
+                const { data: staffData, error: staffError } = await supabase
+                    .from('staff')
+                    .select('*')
+                    .eq('active', true);
+
+                if (staffError) {
+                    console.warn("Error fetching staff (might usually be empty initially):", staffError);
+                } else {
+                    setStaff(staffData || []);
+                }
 
                 // 3. Fetch Readings (RLS filtrará)
                 // Limitamos a las últimas 100 por ahora para no saturar
@@ -133,14 +152,21 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         const fetchProfile = async (userId: string) => {
             try {
-                const { data, error } = await supabase
+                // Timeout para fetchProfile
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error("Timeout fetching profile")), 5000)
+                );
+
+                const dataPromise = supabase
                     .from('profiles')
                     .select('*')
                     .eq('id', userId)
                     .single();
 
+                const { data, error } = await Promise.race([dataPromise, timeoutPromise]) as any;
+
                 if (error) {
-                    console.error("Error fetching profile:", error);
+                    console.error("Error fetching profile (or timeout):", error);
                     return null;
                 }
                 return data;
@@ -177,8 +203,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
         const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' && session?.user) {
-                // setIsLoading(true); // Optional: show loading while switching user
                 const profile = await fetchProfile(session.user.id);
+
                 if (profile) {
                     const user: User = {
                         id: profile.id,
@@ -186,6 +212,17 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
                         name: profile.full_name || 'Usuario',
                         role: profile.role as any,
                         restaurant_id: profile.organization_id
+                    };
+                    setCurrentUser(user);
+                } else {
+                    // Fallback si no hay perfil (para no bloquear)
+                    console.warn("No profile found, using fallback user data");
+                    const user: User = {
+                        id: session.user.id,
+                        email: session.user.email || '',
+                        name: session.user.user_metadata?.full_name || 'Usuario',
+                        role: 'staff', // Rol por defecto seguro
+                        restaurant_id: '' // Sin org
                     };
                     setCurrentUser(user);
                 }
@@ -208,31 +245,39 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         if (!password) {
             throw new Error("Se requiere contraseña para Supabase Auth");
         }
-        const { data, error } = await supabase.auth.signInWithPassword({
+
+        // Timeout wrapper solo para la llamada de auth
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error("TIMEOUT_ERROR")), 10000); // 10s timeout reducid
+        });
+
+        const authPromise = supabase.auth.signInWithPassword({
             email,
             password,
         });
-        if (error) throw error;
 
-        // Force fetch profile to update state immediately
-        if (data.session?.user) {
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', data.session.user.id)
-                .single();
+        try {
+            const result = await Promise.race([authPromise, timeoutPromise]) as any;
 
-            if (profile) {
-                const user: User = {
-                    id: profile.id,
-                    email: profile.email,
-                    name: profile.full_name || 'Usuario',
-                    role: profile.role as any,
-                    restaurant_id: profile.organization_id
-                };
-                setCurrentUser(user);
+            const { error } = result;
+            if (error) throw error;
+
+        } catch (error: any) {
+
+            if (error.message === "TIMEOUT_ERROR") {
+                // Si hubo timeout, verificar si realmente estamos logueados
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.user) {
+                    return; // Éxito silencioso
+                }
+                throw new Error("Tiempo de espera agotado y no se pudo verificar la sesión. Revisa tu conexión.");
             }
+
+            throw error;
         }
+
+        // No forzamos fetchProfile aquí, dejamos que onAuthStateChange lo haga
+        // para evitar condiciones de carrera o bloqueos.
     };
 
     const logout = async () => {
@@ -270,12 +315,28 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-    const addReading = async (newReadingData: Omit<TemperatureReading, 'id' | 'snapshot_min_temp' | 'snapshot_max_temp' | 'recorded_at'>) => {
+    const addReading = async (newReadingData: Omit<TemperatureReading, 'id' | 'snapshot_min_temp' | 'snapshot_max_temp' | 'recorded_at' | 'created_by'> & { notes?: string, member_id?: string, created_by?: string }) => {
         const targetEquipment = equipment.find(e => e.id === newReadingData.equipment_id);
         if (!targetEquipment) throw new Error("Equipo no encontrado");
 
-        const createdBy = newReadingData.created_by || currentUser?.id;
-        if (!createdBy) throw new Error("No hay usuario autenticado ni seleccionado");
+        const createdBy = currentUser?.id;
+        if (!createdBy) throw new Error("No hay usuario autenticado");
+
+        // Resolver taken_by
+        let takenByName = currentUser.name; // Fallback
+        if (newReadingData.member_id) {
+            const staffMember = staff.find(s => s.id === newReadingData.member_id);
+            if (staffMember) {
+                takenByName = staffMember.name;
+            } else {
+                const userMember = users.find(u => u.id === newReadingData.member_id);
+                if (userMember) {
+                    takenByName = userMember.name;
+                } else if (newReadingData.member_id === currentUser.id) {
+                    takenByName = currentUser.name;
+                }
+            }
+        }
 
         const { data, error } = await supabase
             .from('temperature_readings')
@@ -283,11 +344,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
                 equipment_id: newReadingData.equipment_id,
                 value: newReadingData.value,
                 notes: newReadingData.notes,
-                created_by: createdBy,
-                snapshot_min_temp: targetEquipment.min_temp, // Nota: Estos campos no existen en la tabla real por defecto según schema, 
-                // pero el tipo los pide. Si no están en DB, Supabase los ignorará o dará error.
-                // Revisando schema: NO existen. Solo equipment_id, value, notes.
-                // Ajustaremos el insert para mandar solo lo que existe.
+                created_by: createdBy, // Always the auth user
+                taken_by: takenByName, // The name of who took it
             })
             .select()
             .single();
@@ -301,8 +359,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
             value: data.value,
             notes: data.notes,
             created_by: data.created_by,
+            taken_by: data.taken_by,
             recorded_at: data.recorded_at,
-            snapshot_min_temp: targetEquipment.min_temp, // En frontend los mantenemos para UI
+            snapshot_min_temp: targetEquipment.min_temp,
             snapshot_max_temp: targetEquipment.max_temp,
         };
 
@@ -411,6 +470,41 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         if (!currentRestaurant) {
             setCurrentRestaurant(mappedRestaurant);
         }
+        if (!currentRestaurant) {
+            setCurrentRestaurant(mappedRestaurant);
+        }
+    };
+
+    const addStaff = async (data: Omit<StaffMember, 'id' | 'created_at' | 'active'>) => {
+        const { data: newStaff, error } = await supabase
+            .from('staff')
+            .insert({ ...data, active: true })
+            .select()
+            .single();
+
+        if (error) throw error;
+        setStaff(prev => [...prev, newStaff as StaffMember]);
+    };
+
+    const updateStaff = async (id: string, data: Partial<StaffMember>) => {
+        const { error } = await supabase
+            .from('staff')
+            .update(data)
+            .eq('id', id);
+
+        if (error) throw error;
+        setStaff(prev => prev.map(s => s.id === id ? { ...s, ...data } : s));
+    };
+
+    const deleteStaff = async (id: string) => {
+        // Soft delete
+        const { error } = await supabase
+            .from('staff')
+            .update({ active: false })
+            .eq('id', id);
+
+        if (error) throw error;
+        setStaff(prev => prev.filter(s => s.id !== id));
     };
 
     // ... (Resto de providers)
@@ -435,7 +529,11 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
             deleteEquipment,
             addRestaurant,
             users,
-            addUser
+            addUser,
+            staff,
+            addStaff,
+            updateStaff,
+            deleteStaff
         }}>
             {children}
         </AppContext.Provider>

@@ -20,15 +20,15 @@ export function OnboardingPage() {
                 <div className="text-center space-y-2">
                     <h1 className="text-3xl font-bold text-gray-900">Bienvenido, {currentUser?.name}!</h1>
                     <p className="text-gray-500">
-                        Para comenzar, necesitamos crear tu primer restaurante.
+                        Para comenzar, necesitamos crear tu primera sede.
                     </p>
                 </div>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Datos del Restaurante</CardTitle>
+                        <CardTitle>Datos de la Sede</CardTitle>
                         <CardDescription>
-                            Esta será la sucursal principal. Podrás agregar más tarde.
+                            Esta será la sede principal. Podrás agregar más tarde.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>

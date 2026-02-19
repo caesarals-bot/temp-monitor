@@ -68,25 +68,25 @@ export const SettingsPage = () => {
             <Tabs defaultValue="users" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
                     <TabsTrigger value="users">Usuarios y Personal</TabsTrigger>
-                    <TabsTrigger value="restaurants">Sucursales (Restaurantes)</TabsTrigger>
+                    <TabsTrigger value="restaurants">Sedes</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="restaurants" className="space-y-4 pt-4">
                     <div className="flex justify-between items-center">
                         <div>
-                            <h2 className="text-lg font-semibold">Lista de Sucursales</h2>
+                            <h2 className="text-lg font-semibold">Lista de Sedes</h2>
                             <p className="text-sm text-gray-500">Gestiona las ubicaciones físicas.</p>
                         </div>
                         <Dialog open={isRestDialogOpen} onOpenChange={setIsRestDialogOpen}>
                             <DialogTrigger asChild>
                                 <Button size="sm">
                                     <Plus className="mr-2 h-4 w-4" />
-                                    Nueva Sucursal
+                                    Nueva Sede
                                 </Button>
                             </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
-                                    <DialogTitle>Agregar Nueva Sucursal</DialogTitle>
+                                    <DialogTitle>Agregar Nueva Sede</DialogTitle>
                                 </DialogHeader>
                                 <RestaurantForm onSuccess={() => setIsRestDialogOpen(false)} />
                             </DialogContent>
@@ -131,7 +131,7 @@ export const SettingsPage = () => {
                             </div>
                             <Select value={selectedUserRestaurantId} onValueChange={setSelectedUserRestaurantId}>
                                 <SelectTrigger className="w-[200px] h-9">
-                                    <SelectValue placeholder="Filtrar por Restaurante" />
+                                    <SelectValue placeholder="Filtrar por Sede" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">Todos los Usuarios</SelectItem>
@@ -163,7 +163,7 @@ export const SettingsPage = () => {
                                 <TableRow>
                                     <TableHead>Nombre</TableHead>
                                     <TableHead>Rol</TableHead>
-                                    <TableHead>Restaurante Asignado</TableHead>
+                                    <TableHead>Sede Asignada</TableHead>
                                     <TableHead className="text-right">ID</TableHead>
                                 </TableRow>
                             </TableHeader>

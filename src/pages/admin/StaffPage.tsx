@@ -1,6 +1,6 @@
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -16,7 +16,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import { EquipmentForm } from '@/components/admin/EquipmentForm';
+import { StaffForm } from '@/components/admin/StaffForm';
 import { useState } from 'react';
 import {
     Select,
@@ -26,19 +26,19 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
-export const EquipmentPage = () => {
-    const { equipment, restaurants, deleteEquipment, currentUser } = useApp();
+export const StaffPage = () => {
+    const { staff, restaurants, deleteStaff, currentUser } = useApp();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedRestaurantId, setSelectedRestaurantId] = useState<string>('all');
 
-    // Filter equipment based on selection or user's assigned restaurant
-    const filteredEquipment = equipment.filter(eq => {
+    // Filter staff based on selection or user's assigned restaurant
+    const filteredStaff = staff.filter(s => {
         // If specific restaurant selected, filter by it
         if (selectedRestaurantId !== 'all') {
-            return eq.restaurant_id === selectedRestaurantId;
+            return s.restaurant_id === selectedRestaurantId;
         }
-        // Otherwise show all valid equipment (belonging to my visible restaurants)
-        return restaurants.some(r => r.id === eq.restaurant_id);
+        // Otherwise show all valid staff (belonging to my visible restaurants)
+        return restaurants.some(r => r.id === s.restaurant_id);
     });
 
     // Helper para obtener nombre del restaurante
@@ -50,12 +50,12 @@ export const EquipmentPage = () => {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Gestión de Equipos</h1>
-                    <p className="text-sm sm:text-base text-gray-500">Administra los refrigeradores y equipos.</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Gestión de Personal</h1>
+                    <p className="text-sm sm:text-base text-gray-500">Administra los colaboradores que toman lecturas.</p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-2">
-                    {/* Solo mostrar filtro si el usuario NO tiene restaurante asignado (es admin global) */}
+                    {/* Solo mostrar filtro si el usuario NO tiene sede asignada (es admin global) */}
                     {!currentUser?.restaurant_id && (
                         <Select value={selectedRestaurantId} onValueChange={setSelectedRestaurantId}>
                             <SelectTrigger className="w-full sm:w-[200px]">
@@ -74,14 +74,14 @@ export const EquipmentPage = () => {
                         <DialogTrigger asChild>
                             <Button className="w-full sm:w-auto">
                                 <Plus className="mr-2 h-4 w-4" />
-                                Nuevo Equipo
+                                Nuevo Colaborador
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>Agregar Nuevo Equipo</DialogTitle>
+                                <DialogTitle>Registrar Nuevo Colaborador</DialogTitle>
                             </DialogHeader>
-                            <EquipmentForm onSuccess={() => setIsDialogOpen(false)} />
+                            <StaffForm onSuccess={() => setIsDialogOpen(false)} />
                         </DialogContent>
                     </Dialog>
                 </div>
@@ -91,36 +91,41 @@ export const EquipmentPage = () => {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Código</TableHead>
                             <TableHead>Nombre</TableHead>
+                            <TableHead>Cargo</TableHead>
                             <TableHead>Sede</TableHead>
-                            <TableHead>Rango (°C)</TableHead>
                             <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredEquipment.map((item) => (
-                            <TableRow key={item.id}>
-                                <TableCell className="font-mono text-xs font-medium">{item.code}</TableCell>
-                                <TableCell className="font-medium">{item.name}</TableCell>
-                                <TableCell>{getRestaurantName(item.restaurant_id)}</TableCell>
-                                <TableCell>{item.min_temp}° / {item.max_temp}°</TableCell>
+                        {filteredStaff.map((member) => (
+                            <TableRow key={member.id}>
+                                <TableCell className="font-medium">{member.name}</TableCell>
+                                <TableCell>{member.role}</TableCell>
+                                <TableCell>{getRestaurantName(member.restaurant_id)}</TableCell>
                                 <TableCell className="text-right">
                                     <Button
                                         variant="ghost"
                                         size="sm"
                                         className="text-red-500 hover:text-red-700 hover:bg-red-50"
                                         onClick={() => {
-                                            if (confirm('¿Estás seguro de eliminar este equipo?')) {
-                                                deleteEquipment(item.id);
+                                            if (confirm(`¿Estás seguro de eliminar a ${member.name}?`)) {
+                                                deleteStaff(member.id);
                                             }
                                         }}
                                     >
-                                        Eliminar
+                                        <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </TableCell>
                             </TableRow>
                         ))}
+                        {filteredStaff.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center py-8 text-gray-500">
+                                    No hay colaboradores registrados.
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </div>

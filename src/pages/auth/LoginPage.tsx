@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 export function LoginPage() {
     const { login } = useApp();
@@ -75,7 +76,14 @@ export function LoginPage() {
                         />
                     </div>
                     <Button className="w-full" type="submit" disabled={loading}>
-                        {loading ? "Ingresando..." : "Ingresar"}
+                        {loading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Ingresando...
+                            </>
+                        ) : (
+                            "Ingresar"
+                        )}
                     </Button>
                 </form>
             </CardContent>
