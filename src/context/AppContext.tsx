@@ -12,6 +12,7 @@ interface AppContextType {
     equipment: Equipment[];
     readings: TemperatureReading[];
     isLoading: boolean;
+    isDataLoaded: boolean;
 
     // Actions
     login: (email: string, password?: string) => Promise<void>;
@@ -76,6 +77,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
         const fetchData = async () => {
             setIsLoading(true);
+            setIsDataLoaded(false);
             try {
                 // 1. Fetch Restaurants (RLS filtrará por mi)
                 const { data: restData, error: restError } = await supabase
@@ -120,6 +122,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
                 console.error("Error fetching dashboard data:", error);
             } finally {
                 setIsLoading(false);
+                setIsDataLoaded(true);
             }
         };
 
@@ -137,6 +140,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }, [currentUser, userRestaurants, currentRestaurant]);
 
     const [isLoading, setIsLoading] = useState(true);
+    const [isDataLoaded, setIsDataLoaded] = useState(false);
 
     // ... (rest of states)
 
@@ -518,6 +522,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
             equipment,
             readings,
             isLoading,
+            isDataLoaded,
             login,
             register,
             logout,

@@ -2,10 +2,11 @@ import { Navigate, Outlet, useLocation } from "react-router";
 import { useApp } from "@/context/AppContext";
 
 export function ProtectedRoute() {
-    const { currentUser, userRestaurants, isLoading } = useApp();
+    const { currentUser, userRestaurants, isLoading, isDataLoaded } = useApp();
     const location = useLocation();
 
-    if (isLoading) {
+    // Show loading spinner if auth is still validating OR if we have a user but their data hasn't loaded yet.
+    if (isLoading || (currentUser && !isDataLoaded)) {
         return (
             <div className="flex items-center justify-center h-screen bg-gray-50">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
