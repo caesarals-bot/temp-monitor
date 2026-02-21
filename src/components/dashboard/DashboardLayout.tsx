@@ -9,6 +9,7 @@ import {
     FileText,
     Menu,
     Users,
+    ShieldAlert
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -45,7 +46,17 @@ const SidebarContent = ({ onClose }: { onClose?: () => void }) => {
                 <RestaurantSwitcher />
             </div>
 
-            <nav className="flex-1 px-4 space-y-1">
+            <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+                {currentUser?.is_platform_admin && (
+                    <Link
+                        to="/admin"
+                        onClick={onClose}
+                        className="flex items-center gap-3 px-4 py-3 mb-2 rounded-lg text-sm font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 transition-colors border border-purple-200"
+                    >
+                        <ShieldAlert className="h-5 w-5" />
+                        Panel de Plataforma
+                    </Link>
+                )}
 
                 {sidebarItems.map((item) => {
                     const Icon = item.icon;

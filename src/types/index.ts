@@ -19,6 +19,14 @@ export interface TemperatureReading {
     created_by: string; // ID del usuario que registró la toma
 }
 
+export interface Organization {
+    id: string;
+    name: string;
+    status?: 'active' | 'paused' | 'suspended';
+    plan_type?: string;
+    max_restaurants?: number;
+}
+
 export interface Restaurant {
     id: string;
     name: string;
@@ -32,6 +40,7 @@ export interface User {
     email: string;
     role: 'owner' | 'admin' | 'manager' | 'staff';
     restaurant_id?: string; // En Supabase esto mapea a organization_id
+    is_platform_admin?: boolean; // Nuevo campo para Super Admin
 }
 
 export interface StaffMember {

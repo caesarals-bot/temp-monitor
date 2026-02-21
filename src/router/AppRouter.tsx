@@ -17,6 +17,13 @@ const LoginPage = lazy(() => import("@/pages/auth/LoginPage").then(module => ({ 
 const RegisterPage = lazy(() => import("@/pages/auth/RegisterPage").then(module => ({ default: module.RegisterPage })));
 const OnboardingPage = lazy(() => import("@/pages/auth/OnboardingPage").then(module => ({ default: module.OnboardingPage })));
 
+// Super Admin Pages
+const PlatformDashboard = lazy(() => import("@/pages/admin/PlatformDashboard").then(m => ({ default: m.PlatformDashboard })));
+const OrganizationsManager = lazy(() => import("@/pages/admin/OrganizationsManager").then(m => ({ default: m.OrganizationsManager })));
+const UsersManager = lazy(() => import("@/pages/admin/UsersManager").then(m => ({ default: m.UsersManager })));
+import { SuperAdminRoute } from "./SuperAdminRoute";
+import { SuperAdminLayout } from "@/layouts/SuperAdminLayout";
+
 export const AppRouter = () => {
     return (
         <Suspense fallback={<PageSpinner />}>
@@ -41,6 +48,15 @@ export const AppRouter = () => {
                         <Route path="reports" element={<ReportsPage />} />
                         <Route path="profile" element={<ProfilePage />} />
                         <Route path="settings" element={<SettingsPage />} />
+                    </Route>
+                </Route>
+
+                {/* Rutas de Super Admin (Plataforma) */}
+                <Route path="/admin" element={<SuperAdminRoute />}>
+                    <Route element={<SuperAdminLayout />}>
+                        <Route index element={<PlatformDashboard />} />
+                        <Route path="organizations" element={<OrganizationsManager />} />
+                        <Route path="users" element={<UsersManager />} />
                     </Route>
                 </Route>
             </Routes>

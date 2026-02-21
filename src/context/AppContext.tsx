@@ -79,44 +79,32 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
             setIsLoading(true);
             setIsDataLoaded(false);
             try {
-                // 1. Fetch Restaurants (RLS filtrará por mi)
-                const { data: restData, error: restError } = await supabase
-                    .from('restaurants')
-                    .select('*');
+                // Ejecutar todas las consultas en PARALELO para reducir el tiempo de carga drásticamente
+                const [restResponse, eqResponse, staffResponse, readResponse] = await Promise.all([
+                    supabase.from('restaurants').select('*'),
+                    supabase.from('equipment').select('*'),
+                    supabase.from('staff').select('*').eq('active', true),
+                    supabase.from('temperature_readings').select('*').order('recorded_at', { ascending: false }).limit(100)
+                ]);
 
-                if (restError) throw restError;
-                setRestaurants(restData || []);
+                // 1. Manejo de Restaurants
+                if (restResponse.error) throw restResponse.error;
+                setRestaurants(restResponse.data || []);
 
-                // 2. Fetch Equipment (RLS filtrará por mis restaurantes)
-                const { data: eqData, error: eqError } = await supabase
-                    .from('equipment')
-                    .select('*');
+                // 2. Manejo de Equipment
+                if (eqResponse.error) throw eqResponse.error;
+                setEquipment(eqResponse.data || []);
 
-                if (eqError) throw eqError;
-                setEquipment(eqData || []);
-
-                // 2.5 Fetch Staff
-                const { data: staffData, error: staffError } = await supabase
-                    .from('staff')
-                    .select('*')
-                    .eq('active', true);
-
-                if (staffError) {
-                    console.warn("Error fetching staff (might usually be empty initially):", staffError);
+                // 2.5 Manejo de Staff
+                if (staffResponse.error) {
+                    console.warn("Error fetching staff:", staffResponse.error);
                 } else {
-                    setStaff(staffData || []);
+                    setStaff(staffResponse.data || []);
                 }
 
-                // 3. Fetch Readings (RLS filtrará)
-                // Limitamos a las últimas 100 por ahora para no saturar
-                const { data: readData, error: readError } = await supabase
-                    .from('temperature_readings')
-                    .select('*')
-                    .order('recorded_at', { ascending: false })
-                    .limit(100);
-
-                if (readError) throw readError;
-                setReadings(readData || []);
+                // 3. Manejo de Readings
+                if (readResponse.error) throw readResponse.error;
+                setReadings(readResponse.data || []);
 
             } catch (error) {
                 console.error("Error fetching dashboard data:", error);
@@ -156,9 +144,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         const fetchProfile = async (userId: string) => {
             try {
-                // Timeout para fetchProfile
+                // Timeout para fetchProfile MUCHO MÁS CORTO (5s en lugar de 15s)
                 const timeoutPromise = new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error("Timeout fetching profile")), 15000)
+                    setTimeout(() => reject(new Error("Timeout fetching profile")), 5000)
                 );
 
                 const dataPromise = supabase
@@ -191,7 +179,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
                             email: profile.email,
                             name: profile.full_name || 'Usuario',
                             role: profile.role as any, // Cast temporal
-                            restaurant_id: profile.organization_id // Mapeo temporal
+                            restaurant_id: profile.organization_id, // Mapeo temporal
+                            is_platform_admin: profile.is_platform_admin === true
                         };
                         setCurrentUser(user);
                     }
@@ -215,7 +204,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
                         email: profile.email,
                         name: profile.full_name || 'Usuario',
                         role: profile.role as any,
-                        restaurant_id: profile.organization_id
+                        restaurant_id: profile.organization_id,
+                        is_platform_admin: profile.is_platform_admin === true
                     };
                     setCurrentUser(user);
                 } else {
@@ -226,7 +216,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
                         email: session.user.email || '',
                         name: session.user.user_metadata?.full_name || 'Usuario',
                         role: 'staff', // Rol por defecto seguro
-                        restaurant_id: '' // Sin org
+                        restaurant_id: '', // Sin org
+                        is_platform_admin: false
                     };
                     setCurrentUser(user);
                 }
