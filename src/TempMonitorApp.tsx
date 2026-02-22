@@ -1,14 +1,17 @@
 import { BrowserRouter } from "react-router";
 import { AppProvider } from "@/context/AppContext";
+import { AuthProvider } from "@/context/AuthContext";
 import { AppRouter } from "@/router/AppRouter";
 
 function TempMonitorApp() {
   return (
-    <AppProvider>
-      <BrowserRouter>
-        <AppRouter />
-      </BrowserRouter>
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <BrowserRouter>
+          <AppRouter />
+        </BrowserRouter>
+      </AppProvider>
+    </AuthProvider>
   );
 }
 
