@@ -22,6 +22,7 @@ interface AppContextType {
     login: (email: string, password?: string) => Promise<void>;
     register: (email: string, password: string, fullName: string) => Promise<void>;
     logout: () => Promise<void>;
+    forgotPassword: (email: string) => Promise<void>;
     selectRestaurant: (restaurantId: string) => void;
     clearGlobalError: () => void;
 
@@ -48,7 +49,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
-    const { currentUser, login, register, logout, authError, clearAuthError, isLoadingAuth, updateCurrentUser } = useAuth();
+    const { currentUser, login, register, logout, forgotPassword, authError, clearAuthError, isLoadingAuth, updateCurrentUser } = useAuth();
 
     // Instanciar custom hooks
     const {
@@ -184,6 +185,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
             login,
             register,
             logout,
+            forgotPassword,
             selectRestaurant,
             clearGlobalError,
             addReading,

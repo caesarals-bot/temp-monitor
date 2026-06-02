@@ -45,6 +45,20 @@ El sistema maneja dos estados iniciales críticos:
     *   **Acción:** El usuario *debe* crear un restaurante para continuar.
     *   **Resultado:** Se crea el restaurante, se asigna al usuario (como `owner`) y se redirige al Dashboard.
 
+### B. Recuperación de Contraseña
+El sistema implementa flujo de "Olvidé mi contraseña" usando Supabase Auth:
+
+1.  **Usuario solicita recuperación:**
+    *   Accede a `/forgot-password`
+    *   Ingresa su correo electrónico
+    *   El sistema llama a `supabase.auth.resetPasswordForEmail()`
+2.  **Correo de recuperación:**
+    *   Supabase envía enlace único al correo del usuario
+    *   Enlace apunta a `${window.location.origin}/reset-password`
+3.  **Restablecimiento:**
+    *   Usuario hace clic en el enlace y establece nueva contraseña
+    *   Redirección a `/login` para iniciar sesión
+
 ### B. Gestión Multi-Sucursal (Planeado)
 Para usuarios con acceso a múltiples restaurantes (`admin` o dueños de franquicia):
 *   Se implementará un **Selector de Contexto** en el Header.
@@ -64,6 +78,12 @@ Aunque el frontend filtra datos por UX, la seguridad real reside en la base de d
     *   `DashboardLayout`: Estructura principal con Sidebar y Header (protegido).
 *   `src/context`:
     *   `AppContext`: "Cerebro" de la aplicación. Maneja usuarios, restaurantes y lógica de negocio síncrona/asíncrona.
+    *   `AuthContext`: Manejo de autenticación (login, register, logout, forgotPassword).
+*   `src/pages/auth`:
+    *   `LoginPage`: Formulario de inicio de sesión.
+    *   `RegisterPage`: Formulario de registro.
+    *   `ForgotPasswordPage`: Formulario de recuperación de contraseña.
+    *   `OnboardingPage`: Flujo de creación de restaurante inicial.
 *   `src/mocks`:
     *   Contiene datos simulados para desarrollo y modo demo sin backend.
 
