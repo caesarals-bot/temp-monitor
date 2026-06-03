@@ -16,6 +16,7 @@ const ProfilePage = lazy(() => import("@/pages/admin/ProfilePage").then(module =
 const LoginPage = lazy(() => import("@/pages/auth/LoginPage").then(module => ({ default: module.LoginPage })));
 const RegisterPage = lazy(() => import("@/pages/auth/RegisterPage").then(module => ({ default: module.RegisterPage })));
 const ForgotPasswordPage = lazy(() => import("@/pages/auth/ForgotPasswordPage").then(module => ({ default: module.ForgotPasswordPage })));
+const ResetPasswordPage = lazy(() => import("@/pages/auth/ResetPasswordPage").then(module => ({ default: module.ResetPasswordPage })));
 const OnboardingPage = lazy(() => import("@/pages/auth/OnboardingPage").then(module => ({ default: module.OnboardingPage })));
 
 // Super Admin Pages
@@ -37,6 +38,7 @@ export const AppRouter = () => {
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                    <Route path="/reset-password" element={<ResetPasswordPage />} />
                 </Route>
 
                 {/* Rutas Protegidas */}
