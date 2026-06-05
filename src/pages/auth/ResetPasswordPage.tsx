@@ -26,6 +26,13 @@ export function ResetPasswordPage() {
         if (!hasAccessToken) {
             setState("error");
             setErrorMessage("Este enlace de recuperación no es válido o ha expirado.");
+        } else {
+            supabase.auth.getSession().then(({ data, error }) => {
+                if (error || !data.session) {
+                    setState("error");
+                    setErrorMessage("Este enlace de recuperación no es válido o ha expirado.");
+                }
+            });
         }
     }, []);
 
@@ -45,9 +52,20 @@ export function ResetPasswordPage() {
         setState("loading");
 
         try {
+            const { data: sessionData } = await supabase.auth.getSession();
+
+            if (!sessionData.session) {
+                throw new Error("Sesión no válida. El enlace puede haber expirado.");
+            }
+
             const { error } = await supabase.auth.updateUser({ password });
 
-            if (error) throw error;
+            if (error) {
+                if (error.message.includes("same")) {
+                    throw new Error("La nueva contraseña debe ser diferente a la actual.");
+                }
+                throw error;
+            }
 
             setState("success");
             toast.success("Contraseña actualizada", {
